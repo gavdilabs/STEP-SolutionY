@@ -3,12 +3,13 @@ namespace schema;
 
 entity Project {
     key ID: UUID;
-    workhours: Association to WorkHours;
+    workhours: Association to many WorkHours on workhours.project = $self;
     ProjectName: String;
-    StartDate: String;//Date @cds.valid.from;
-    EndDate: String;//Date @cds.valid.to;
+    StartDate: Date @cds.valid.from;
+    EndDate: Date @cds.valid.to;
     MaxHours: Double;
-    // ChangeInfo ModifiedBy;
+    modifiedBy : UUID @cds.on.insert: $user @cds.on.update: $user;
+    modifiedAt : Timestamp @cds.on.insert: $now  @cds.on.update: $now;
 }
 
 entity User {
@@ -18,26 +19,27 @@ entity User {
     Username: String;
     FirstName: String;
     LastName: String;
-    //Picture: LargeBinary @Core.MediaType: 'image/png';
+    //Image : LargeBinary @Core.MediaType: 'image/png';
     Title: String;
 }
 
 entity WorkSchedule {
-    //Key ID: UUID;
+    Key ID: UUID;
     user: Association to User; // Backlink
     WeekDay: String;
-    StartTime: Double;
-    EndTime: Double;
-    StartDate: Double;
-    EndDate: Double;
+    StartTime: Time;
+    EndTime: Time;
+    StartDate: Date @cds.valid.from;
+    EndDate: Date @cds.valid.to;
 }
 
 entity WorkHours {
-    //Key ID: UUID;
-    project: Association to many Project on project.workhours = $self; // Backlink
+    Key ID: UUID;
+    project: Association to Project;
     user: Association to User; // Backlink
     Day: String;
-    StartTime: Double;
-    EndTime: Double;
-    // ChangeInfo ModifiedBy;
+    StartTime: Time;
+    EndTime: Time;
+    modifiedBy : UUID @cds.on.insert: $user @cds.on.update: $user;
+    modifiedAt : Timestamp @cds.on.insert: $now  @cds.on.update: $now;
 }
