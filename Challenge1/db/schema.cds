@@ -1,4 +1,4 @@
-using { cuid, sap, managed, temporal } from '@sap/cds/common';
+using { cuid, sap, managed, temporal} from '@sap/cds/common';
 
 namespace schema;
 
@@ -8,17 +8,15 @@ entity Project : cuid, managed{
     StartDate: Date; //@cds.valid.from;
     EndDate: Date; //@cds.valid.to;
     MaxHours: Double;
-    //modifiedBy : UUID @cds.on.insert: $user @cds.on.update: $user;
-    //modifiedAt : Timestamp @cds.on.insert: $now  @cds.on.update: $now;
 }
 
 entity User : cuid {
     workschedule: Association to many WorkSchedule on workschedule.user = $self;
     workhours: Association to many WorkHours on workhours.user = $self;
-    Username: String;
-    FirstName: String;
-    LastName: String;
-    //Image : LargeBinary @Core.MediaType: 'image/png';
+    Username: String(12);
+    FirstName: String(24);
+    LastName: String(24);
+    //Image : LargeBinary @Core.MediaType : 'image/png';
     Title: String;
 }
 
@@ -37,16 +35,14 @@ entity WorkSchedule : cuid{
     WeekDay: String;
     StartTime: Time;
     EndTime: Time;
-    EffectiveStartDate: Date @cds.valid.from;
-    EffectiveEndDate: Date @cds.valid.to;
+    EffectiveStartDate: Date; //@cds.valid.from;
+    EffectiveEndDate: Date; //@cds.valid.to;
 }
 
 entity WorkHours : cuid,managed{
     project: Association to Project;
     user: Association to User; // Backlink
     Day: Date;
-    StartTime: Time;
-    EndTime: Time;
-    //modifiedBy : UUID @cds.on.insert: $user @cds.on.update: $user;
-    //modifiedAt : Timestamp @cds.on.insert: $now  @cds.on.update: $now;
+    StartTime: DateTime;
+    EndTime: DateTime;
 }
