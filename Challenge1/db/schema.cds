@@ -2,19 +2,17 @@ using { cuid, sap, managed, temporal } from '@sap/cds/common';
 
 namespace schema;
 
-entity Project : cuid,managed{
-    //key ID: UUID;
+entity Project : cuid, managed{
     workhours: Association to many WorkHours on workhours.project = $self;
     ProjectName: String;
-    StartDate: Date @cds.valid.from;
-    EndDate: Date @cds.valid.to;
+    StartDate: Date; //@cds.valid.from;
+    EndDate: Date; //@cds.valid.to;
     MaxHours: Double;
     //modifiedBy : UUID @cds.on.insert: $user @cds.on.update: $user;
     //modifiedAt : Timestamp @cds.on.insert: $now  @cds.on.update: $now;
 }
 
 entity User : cuid {
-    //Key ID: UUID;
     workschedule: Association to many WorkSchedule on workschedule.user = $self;
     workhours: Association to many WorkHours on workhours.user = $self;
     Username: String;
@@ -35,7 +33,6 @@ type WorkDay : Integer64 enum {
 }
 
 entity WorkSchedule : cuid{
-    //Key ID: UUID;
     user: Association to User; // Backlink
     WeekDay: String;
     StartTime: Time;
@@ -45,7 +42,6 @@ entity WorkSchedule : cuid{
 }
 
 entity WorkHours : cuid,managed{
-    //Key ID: UUID;
     project: Association to Project;
     user: Association to User; // Backlink
     Day: Date;
