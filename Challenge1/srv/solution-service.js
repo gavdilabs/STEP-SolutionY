@@ -1,6 +1,8 @@
 const cds = require('@sap/cds');
 
 module.exports = async function(srv) {
+    const {WorkHoursSet, ProjectSet} = srv.entities;
+
     //Slight user restrictions in the form of no spaces in username and no numbers in first name or last name.
     srv.before('CREATE', 'UserSet', async (req) => {
         const Username = req.data["Username"];
@@ -16,16 +18,18 @@ module.exports = async function(srv) {
             req.reject(400, 'Last name cannot include numbers');
         }
     })
+    srv.before('CREATE', 'WorkHoursSet', async (req)=>{
+        const db = srv.transaction(req);
+        const filter = await db.get(ProjectSet).where({"ID": req.data["project_ID"]});
+        const currentProjectEntity = filter[0];
 
-    //Make sure that there is at least 11 hours between time registrations on the same user.
-    srv.before('CREATE', 'WorkHours', async (req) => {
-        const WorkHours = req.data["StartTime", "EndTime"];
-        for (let i = 0; i < x; i++){
-            let StartTime = StartTime;
-            let EndTime = EndTime;
-            if(EndTime - StartTime < 11){
-                req.reject(400,"11 hours have not passed since last registration");
-            }
+
+        const startTime = new Date(req.data["StartTime"]);
+        const endTime = new Date (req.data["EndTime"]);
+        const projectStartDate = new Date(currentProjectEntity["StartDate"]);
+        const projectEndDate = new Date(currentProjectEntity["EndDate"]);
+        if (startTime < projectStartDate || endTime > projectEndDate ) {
+            req.reject(400, "Cannot register hours outside valid project hours");
         }
     })
 }
