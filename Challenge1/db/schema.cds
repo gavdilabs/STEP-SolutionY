@@ -4,10 +4,12 @@ namespace schema;
 
 entity Project : cuid, managed{
     workhours: Association to many WorkHours on workhours.project = $self;
-    ProjectName: String;
-    StartDate: Date  @cds.valid.from;
-    EndDate: Date @cds.valid.to;
-    MaxHours: Double;
+    ProjectName: String not null;
+    StartDate: Date  @cds.valid.from not null;
+    EndDate: Date @cds.valid.to not null;
+    MaxHours: Double not null;
+    RegisteredHours: Double;
+    
 }
 
 entity User : cuid {
