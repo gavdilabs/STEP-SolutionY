@@ -1,7 +1,7 @@
 const cds = require('@sap/cds');
 
 module.exports = async function(srv) {
-    const {WorkHoursSet, ProjectSet} = srv.entities;
+    const {WorkHoursSet, ProjectSet, UserSet} = srv.entities;
 
     //Slight user restrictions in the form of no spaces in username and no numbers in first name or last name.
     srv.before('CREATE', 'UserSet', async (req) => {
@@ -58,26 +58,17 @@ module.exports = async function(srv) {
         project.RegisteredHours += calculatedHours;
         await db.update(ProjectSet).byKey({ID: project.ID}).with(project);
     })
-
-    /*srv.before('CREATE', 'WorkHoursSet', async (req) => {
-        const db = srv.transaction(req);
-        // Get the user id from the WorkHours entity
-        const user_ID = req.data["user_ID"];
-        const createdAt = req.data["createdAt"];
-        // We setup the date object for figuring how if it was 11 hours ago
-        const now = new Date();
-        const pastDate = new Date(now.setHours(now.getHours() - 11));
     
-        // Then we filter from the database for entries with that user id and a created date within the past 11 hours
-        //const prevRecords = cds.run(SELECT.from("WorkHoursSet").where(user_ID = ${user_ID} and createdAt >= ${pastDate}));
-        const prevRecords = cds.run(SELECT.from("WorkHoursSet").where(`user_ID = '${user_ID}' and createdAt >= '${pastDate}'`));
-        // Finally we check if there is any entities matching that criteria
+    srv.before('CREATE', 'WorkHoursSet', async (req) => {
+        const db = srv.transaction(req);
+        const current = new Date();
+        const prevDate = new Date().setHours(current.getHours()-11); //husk -11
+
+        const prevRecords = await cds.run(SELECT.from(WorkHoursSet).where(`user_ID = '${req.data.user_ID}' and createdAt >= ${prevDate}`));
+
         const entriesExists = prevRecords.length > 0;
-        if (entriesExists) {
-            throw new Error("You can't log Workhours, because you have logged less than 11 hours ago");
+        if (entriesExists){
+            req.reject (400, "11 hours have not passed since last registration");
         }
-    })
-*/
-
-
+    })  
 }
