@@ -17,5 +17,7 @@ service solutionService {
     entity WorkScheduleSet as projection on schema.WorkSchedule;
 
     entity WorkHoursSet as projection on schema.WorkHours;
+
+    entity DayScheduleSet as projection on schema.DaySchedule;
 }
 
