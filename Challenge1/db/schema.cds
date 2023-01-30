@@ -5,8 +5,8 @@ namespace schema;
 entity Project : cuid, managed{
     workhours: Association to many WorkHours on workhours.project = $self;
     ProjectName: String not null;
-    StartDate: Date  @cds.valid.from not null;
-    EndDate: Date @cds.valid.to not null;
+    StartDate: Date not null;
+    EndDate: Date not null;
     MaxHours: Double not null;
     RegisteredHours: Double;
     
@@ -37,15 +37,21 @@ entity DaySchedule : cuid, managed{
     StartTime: Time;
     EndTime: Time; 
     WeekDay: WorkDay;
+    //Weekday: String;
 }
 
 entity WorkSchedule : cuid{
+    absence: Association to many Absence on absence.workschedule = $self;
     user: Association to User; // Backlink
-    //WeekDay: String;
-    StartTime: Time;
-    EndTime: Time;
     EffectiveStartDate: Date; //@cds.valid.from;
     EffectiveEndDate: Date; //@cds.valid.to;
+}
+
+entity Absence : cuid{
+    workschedule: Association to WorkSchedule;
+    absence: Boolean;
+    absenceStartTime: DateTime;
+    absenceEndTime: DateTime;
 }
 
 entity WorkHours : cuid,managed{

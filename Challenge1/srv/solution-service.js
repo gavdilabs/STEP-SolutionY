@@ -1,7 +1,7 @@
 const cds = require('@sap/cds');
 
 module.exports = async function(srv) {
-    const {WorkHoursSet, ProjectSet, UserSet, WorkScheduleSet} = srv.entities;
+    const {WorkHoursSet, ProjectSet, UserSet, WorkScheduleSet, DayScheduleSet, AbsenceSet} = srv.entities;
 
     //Slight user restrictions in the form of no spaces in username and no numbers in first name or last name.
     srv.before('CREATE', 'UserSet', async (req) => {
@@ -32,33 +32,28 @@ module.exports = async function(srv) {
             req.reject(400, "Cannot register hours outside valid project hours");
         }
     })
-
+        
+    
+        //max hours custom logic
     srv.before('CREATE', 'WorkHoursSet', async (req)=>{
         const db = srv.transaction(req);
         const project = await db.get(ProjectSet).byKey({ID: req.data.project_ID});
 
         const startTime = new Date(req.data["StartTime"]).getHours();
         const endTime = new Date (req.data["EndTime"]).getHours();
-        /*if (endTime.getHours() == 23){
-            calculatedHours = (endTime+24)-startTime;
-            return;
-        } else {
-            calculatedHours = endTime-startTime;
-        }
-        */
         
         const calculatedHours = endTime-startTime;
         if(!project.RegisteredHours) project.RegisteredHours = 0.0; 
 
         if(calculatedHours + project.RegisteredHours > project.MaxHours) {
-            req.reject(400, "Dummy!");
+            req.reject(400, "Maximum hours for this project has already been reached");
             return;
         }
         
         project.RegisteredHours += calculatedHours;
         await db.update(ProjectSet).byKey({ID: project.ID}).with(project);
     })
-    
+        //11hours passed logic
     srv.before('CREATE', 'WorkHoursSet', async (req) => {
         const db = srv.transaction(req); //måske slet
         const current = new Date();
@@ -71,13 +66,14 @@ module.exports = async function(srv) {
             req.reject (400, "11 hours have not passed since last registration");
         }
     })  
-
-    srv.before('CREATE', 'WorkScheduleSet', async (req) =>{
+        //Custom logic to create an entity for each day in the workSchedule
+    srv.after('CREATE', 'WorkScheduleSet', async (req) =>{
         const db = srv.transaction(req);
-        const user = await db.get(UserSet).byKey({ID: req.data.user_ID});
+        //const user = await db.get(UserSet).byKey({ID: req.data.user_ID});
         
-        const EffectiveStartDate = new Date(req.data["EffectiveStartDate"]);
-        const EffectiveEndDate = new Date(req.data["EffectiveEndDate"]);
+        
+        const EffectiveStartDate = new Date(req.EffectiveStartDate);
+        const EffectiveEndDate = new Date(req.EffectiveEndDate);
         let dates = [];
         let validDays = [];
         let currentDate = EffectiveStartDate;
@@ -95,50 +91,117 @@ module.exports = async function(srv) {
             console.log(validDays);
         }
 
+        
+
         for (let i = 0; i <validDays.length; i++){
             switch(validDays[i]){
                 case 0:
-                    req.data.DaySchedule["StartTime"] = '00:00:00';
-                    req.data.DaySchedule["EndTime"] = '00:00:00';
-                    await db.update(WDayScheduleSet).byKey({ID:user.ID}).with(user);
+                    await cds.run(INSERT.into(DayScheduleSet).entries([
+                        {
+                            WorkSchedule_ID: req.ID,
+                            StartTime: '00:00:00',
+                            EndTime: '00:00:00',
+                            WeekDay : 0
+                        }
+                    ]));
                     continue;
+
                 case 1:
-                    req.data["StartTime"] = '08:00:00';
-                    req.data["EndTime"] = '16:00:00';
-                    await db.update(WorkScheduleSet).byKey({ID:user.ID}).with(user);
+                    await cds.run(INSERT.into(DayScheduleSet).entries([
+                        {             
+                            WorkSchedule_ID: req.ID,              
+                            StartTime: '00:08:00',
+                            EndTime: '00:16:00',
+                            WeekDay : 1
+                        }
+                    ]));
                     continue;
                 case 2:
-                    req.data["StartTime"] = '08:00:00';
-                    req.data["EndTime"] = '16:00:00';
-                    await db.update(WorkScheduleSet).byKey({ID:user.ID}).with(user);
+                    await cds.run(INSERT.into(DayScheduleSet).entries([
+                        {           
+                            WorkSchedule_ID: req.ID,                
+                            StartTime: '00:08:00',
+                            EndTime: '00:16:00',
+                            WeekDay : 2
+                        }
+                    ]));
                     continue;
                 case 3:
-                    req.data["StartTime"] = '08:00:00';
-                    req.data["EndTime"] = '16:00:00';
-                    await db.update(WorkScheduleSet).byKey({ID:user.ID}).with(user);
+                    await cds.run(INSERT.into(DayScheduleSet).entries([
+                        {        
+                            WorkSchedule_ID: req.ID,                    
+                            StartTime: '00:08:00',
+                            EndTime: '00:16:00',
+                            WeekDay : 3
+                        }
+                    ]));
                     continue;
                 case 4:
-                    req.data["StartTime"] = '08:00:00';
-                    req.data["EndTime"] = '16:00:00';
-                    await db.update(WorkScheduleSet).byKey({ID:user.ID}).with(user);
+                    await cds.run(INSERT.into(DayScheduleSet).entries([
+                        {        
+                            WorkSchedule_ID: req.ID,                    
+                            StartTime: '00:08:00',
+                            EndTime: '00:16:00',
+                            WeekDay : 4
+                        }
+                    ]));
                     continue;
                 case 5:
-                    req.data["StartTime"] = '08:00:00';
-                    req.data["EndTime"] = '14:00:00';
-                    await db.update(WorkScheduleSet).byKey({ID:user.ID}).with(user);
+                    await cds.run(INSERT.into(DayScheduleSet).entries([
+                        {     
+                            WorkSchedule_ID: req.ID,                       
+                            StartTime: '00:08:00',
+                            EndTime: '00:14:00',
+                            WeekDay : 5
+                        }
+                    ]));
                     continue;
                 case 6:
-                    req.data["StartTime"] = '00:00:00';
-                    req.data["EndTime"] = '00:00:00';
-                    await db.update(WorkScheduleSet).byKey({ID:user.ID}).with(user);
+                    await cds.run(INSERT.into(DayScheduleSet).entries([
+                        {     
+                            WorkSchedule_ID: req.ID,                       
+                            StartTime: '00:00:00',
+                            EndTime: '00:00:00',
+                            WeekDay : 6
+                        }
+                    ]));
                     continue;
                 default:
-                    req.data["StartTime"] = '00:00:00';
-                    req.data["EndTime"] = '00:00:00';
+                    await cds.run(INSERT.into(DayScheduleSet).entries([
+                        {
+                            WorkSchedule_ID: req.ID,
+                            StartTime: '00:00:00',
+                            EndTime: '00:00:00',
+                            WeekDay : 0
+                        }
+                    ]));
                     continue;
             }
            
         }
 
     })
+
+    srv.before('CREATE', 'AbsenceSet', async (req) =>{
+        const StartDate = new Date(req.data["absenceStartTime"]);
+        const EndDate = new Date(req.data["absenceEndTime"]);
+        const StartTime = StartDate.getTime();
+        const EndTime = EndDate.getTime();
+        const Day = StartDate.getDay().toString();
+        const daySchedules = await cds.run(SELECT.from(DayScheduleSet).where((`workschedule_ID = '${req.data.workschedule_ID}'`)))
+        
+
+        let daySchedule; 
+            for(const el of daySchedules) {
+                if(el.WeekDay !== Day)
+                continue; 
+            daySchedule = el;
+            }
+        if (!(StartTime > daySchedule.StartTime && StartTime < daySchedule.EndTime && EndTime > daySchedule.StartTime && EndTime < daySchedule.EndTime)){
+            req.reject(400, "Cannot register outside workhours");
+        }
+        
+
+    })
+
 }
