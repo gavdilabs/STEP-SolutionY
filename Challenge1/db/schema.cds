@@ -49,7 +49,6 @@ entity WorkSchedule : cuid{
 
 entity Absence : cuid{
     workschedule: Association to WorkSchedule;
-    absence: Boolean;
     absenceStartTime: DateTime;
     absenceEndTime: DateTime;
 }
@@ -57,7 +56,7 @@ entity Absence : cuid{
 entity WorkHours : cuid,managed{
     project: Association to Project;
     user: Association to User; // Backlink
-    Day: Date;
+    //Day: Date;
     StartTime: DateTime;
     EndTime: DateTime;
 }
