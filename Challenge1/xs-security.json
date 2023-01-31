@@ -15,14 +15,14 @@
     {
         "name": "ADMIN",
         "description" : "Admin",
-        "scope-references": ["£XSAPPNAME.Admin"]
+        "scope-references": ["$XSAPPNAME.Admin"]
 
         
     },
     {
         "name": "User",
         "description" : "User",
-        "scope-references": ["£XSAPPNAME.User"]
+        "scope-references": ["$XSAPPNAME.User"]
     }
 ]
 }
